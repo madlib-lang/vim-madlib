@@ -10,113 +10,134 @@ syntax case match
 setlocal foldmethod=indent
 setlocal foldignore=
 
-syntax keyword madNoBind         _
-           \   nextgroup=madParens,madOperators
 
-syntax keyword madInterface      interface
-           \   nextgroup=madDataIdentifier
-highlight link madInterface      Keyword
+syntax keyword madImport           import
+       \   skipwhite skipempty 
+highlight link madImport           Keyword
 
-syntax keyword madInstance       instance
-           \   nextgroup=madDataIdentifier
-highlight link madInstance       Keyword 
+syntax keyword madPrelude          AssertionError Error ErrorWithMessage Wish Set Just Nothing Left Right String Boolean Integer Float
+highlight link madPrelude          Type
 
-syntax keyword madWhere          where is
-           \   nextgroup=madParens,madBlock
-highlight link madWhere          Keyword
+syntax region  madParens
+           \   start=+(+
+           \   end=+)+
+           \   contains=@madExpression,madComma,madSpread
+           \   extend
+           \   fold
+           \   skipwhite skipempty
+           \   nextgroup=madFatArrow,madFunctionCall,madDot,@madOperators
+highlight link madParens           Statement 
 
-syntax match   madIdentifier     "\v<[a-zA-z0-9_]+>"
-           \   nextgroup=madAssignment,madOperators,madParens
-highlight link madIdentifier     Identifier
 
-syntax match   madNumber         "\v<\-?\d*\.?\d+>"
-highlight link madNumber         Number
+syntax keyword madReturn           return 
+           \   nextgroup=@madExpression
+highlight link madReturn           Keyword
+
+syntax keyword madBoolean          true false
+highlight link madBoolean          Boolean
+
+syntax match   madType             "\<[A-Z][a-zA-Z0-9_']*\>"
+highlight link madType             Structure
+
+syntax match   madTypeDef          "::"
+highlight link madTypeDef          Special
 
 syntax match   madTypeSig
-           \   "^\s*[_a-z][a-zA-Z0-9_']*#\?\(,\s*[_a-z][a-zA-Z0-9_']*#\?\)*\_s\+::\_s"
-           \   contains=madWhere,madIdentifier,madOperators,madSeparator,madParens
-highlight link madTypeSig        Typedef 
+      \   "^\s*\([a-zA-Z0-9_']*\(,\s*[_a-z][a-zA-Z0-9_']*#\?\)*\_s\+::\_s\)"
+      \   contains=madIdentifier,madSkinnyArrow,madType,madParens,madTypeDef
+highlight link madTypeSig          Typedef 
 
-syntax match   madSeparator      "[,;]"
-highlight link madSeparator      Noise
+syntax match   madSeparator        "[,;]"
+highlight link madSeparator        Noise
 
-syntax match   madAssignment     "="
-highlight link madAssignment     Operator
+syntax match   madAssignment       "="
+highlight link madAssignment       Operator
 
-syntax match   madFatArrow       "=>"
-highlight link madFatArrow       Operator
+syntax match   madAssignmentColon  ":"
+highlight link madAssignmentColon  Operator
 
-syntax match   madSkinnyArrow    "->"
-highlight link madSkinnyArrow    Operator
+syntax match   madFatArrow         "=>"
+highlight link madFatArrow         Operator
 
-syntax match   madOperators      "[-!#$%&\*\+/<>\?@\\^|~:.]\+\|\<_\>"
-highlight link madOperators      Operator
+syntax match   madSkinnyArrow      "->"
+highlight link madSkinnyArrow      Operator
 
-syntax keyword madData           data 
-           \   nextgroup=madDataIdentifier
-highlight link madData           Keyword
+syntax keyword madMagicPlaceholder $
+           \   nextgroup=madParens,madComma
+highlight link madMagicPlaceholder PreProc
 
-syntax match   madTypeVar        contained /\<\K\k\+/
+syntax match   madComma            +,+ contained
+highlight link madComma            Operator
+
+syntax match   madLogicalAnd       +&&+ contained
+highlight link madLogicalAnd       Conditional
+
+syntax match   madLogicalOr        +||+ contained
+highlight link madLogicalOr        Conditional
+
+syntax match   madOperators        "[-!$&\*\+<=>\?\\|.:\/]\+\|<_\>"
+highlight link madOperators        Operator
+
+syntax keyword madPipe             pipe
+highlight link madPipe             Function 
+
+syntax keyword madWhere            where
+highlight link madWhere            Structure
+
+syntax region  madParens
+           \   matchgroup=madDelimiter
+           \   start="(" end=")" 
+           \   contains=TOP,@madTypeSig,@Spell,@madExpression
+highlight link madParens           Statement 
+
+" syntax match   madConstructor      "\<\K\k*\>\%(\_s*<)"
+" highlight link madConstructor      StorageClass
+
+" syntax match   madFunctionCall     "\<\<[a-z][a-zA-Z0-9_']*\>\>\((.{-})\)"
+syntax match   madFunctionCall     +\<\K\k*\>\%(\_s*<\%(\_[^&|)]\{-1,}\%([&|]\_[^&|)]\{-1,}\)*\)>\)\?\%(\_s*\%(?\.\)\?\_s*(\)\@=+
+           \   contains=madImport,@madExpression,madObject,madComma,madMagicPlaceholder,madNoBind
            \   skipwhite
-highlight link madTypeVar        Constant
+           \   skipempty
+           \   nextgroup=madFunctionCallArgs
+highlight link madFunctionCall     Function
 
-syntax match   madDataIdentifier "\<[A-Z][a-zA-Z0-9_']*\>" 
-           \   nextgroup=madTypeVar,madOperators,madParens
-highlight link madDataIdentifier TypeDef
-
-syntax keyword madFrom           contained from
-           \   skipwhite skipempty 
-           \   nextgroup=madString
-highlight link madFrom           Keyword
-
-syntax match   madModuleComma    contained /,/
-           \   skipwhite skipempty 
-           \   nextgroup=madModuleKeyword,madModuleAsterisk,madModuleGroup
-highlight link madModuleComma    Noise
-
-syntax match   madModuleAsterisk contained /\*/
-           \   skipwhite skipempty 
-           \   nextgroup=madModuleKeyword,madFrom
-highlight link madModuleAsterisk Special
-
-syntax match   madModuleKeyword  contained /\<\K\k*/
-           \   skipwhite skipempty 
-           \   nextgroup=madFrom,madModuleComma
-highlight link madModuleKeyword  Keyword
-
-syntax keyword madExport         export
-highlight link madExport         Underlined
-
-syntax keyword madImport         import
-           \   skipwhite skipempty 
-           \   nextgroup=madModuleKeyword,madModuleGroup
-highlight link madImport         Keyword
-
-syntax match   madComment        "\v\/\/.*$"
-highlight link madComment        Comment
-
-syntax keyword madTodo           TODO
+syntax region  madFunctionCallArgs
+           \   matchgroup=madFunctionParens
+           \   start=+(+
+           \   end=+)+
            \   contained
-           \   containedin=madBlockComment,madComment
-highlight link madTodo           Todo
+           \   contains=@madExpression,madComma,madSpread,madNoBind,madMagicPlaceholder,madComment,madBlockComment
+           \   skipwhite
+           \   skipempty
+           \   nextgroup=madAccessor,madFunctionCallArgs,madDot,madOptionalOperator,@madOperators
+
+syntax keyword madExport           export
+highlight link madExport           Underlined
+
+syntax keyword madNoBind           _
+           \   nextgroup=madParens,madOperators,madComma
+highlight link madNoBind           Ignore 
+
+syntax region  madFence start="#-" end="-#"
+highlight link madFence            Define
 
 syntax region  madBlockComment
            \   start="/\*" end="\*/"
            \   contains=madTodo,@Spell
-highlight link madBlockComment   Comment
+highlight link madBlockComment     Comment
+
+syntax match   madComment          "\v\/\/.*$"
+highlight link madComment          Comment
 
 " STRINGS & REGULAR EXPRESSIONS
-" syntax region  madTemplateExpression
-"            \   contained
-"            \   matchgroup=madTemplateBraces
-"            \   start=+${+
-"            \   end=+}+
-"            \   contains=@madExpression
-"            \   keepend
+syntax region  madTemplateExpression
+           \   contained
+           \   matchgroup=madTemplateBraces
+           \   start=+${+
+           \   end=+}+
+           \   contains=@madExpression
+           \   keepend
 
-syntax match   madSpecial        contained
-           \   "\v\\%(x\x\x|u%(\x{4}|\{\x{4,5}})|c\u|.)"
-highlight link madSpecial        Identifier
 syntax region  madString
            \   start=+\z(["']\)+
            \   skip=+\\\%(\z1\|$\)+
@@ -124,44 +145,40 @@ syntax region  madString
            \   end=+$+
            \   contains=madSpecial
            \   extend
-highlight link madString         String
-syntax region  madTemplateString
-           \   start=+`+
-           \   skip=+\\`+
-           \   end=+`+
-           \   contains=madSpecial
-           \   extend
-highlight link madTemplateString         String
-syntax match   madTaggedTemplate   /\<\K\k*\ze`/ nextgroup=madTemplateString
-highlight link madTaggedTemplate         Identifier
+highlight link madString           String
 
-syntax keyword madBool                   true false
-highlight link madBool                   Boolean
 
-syntax region  madModuleGroup    contained
-           \   start=/{/ end=/}/   
-           \   skipwhite skipempty
-           \   matchgroup=madModuleBraces
-           \   contains=madModuleKeyword,madModuleComma,madComment
-           \   nextgroup=madFrom
-           \   fold
-syntax region  madParens
-           \   matchgroup=madDelimiter
-           \   start="(" end=")" 
-           \   contains=TOP,@madTypeSig,@Spell
-syntax region  madBrackets
-           \   matchgroup=madDelimiter
-           \   start="\[" end="]" 
-           \   contains=TOP,@madTypeSig,@Spell
-syntax region  madBlock
-           \   matchgroup=madDelimiter
-           \   start="{" end="}" 
-           \   contains=TOP,@Spell
+syntax match   madTemplateStringTag +\<\K\k*\>\%(\_s*`\)\@=+ skipwhite skipempty nextgroup=madTemplateString
+syntax region  madTemplateString start=+`+ skip=+\\\\\|\\`\|\\\n+ end=+`+ contains=madTemplateExpression,@Spell skipwhite skipempty nextgroup=madAccessor,madDot,@madOperators
+syntax region  madTemplateExpression matchgroup=madTemplateBrace start=+\%([^\\]\%(\\\\\)*\)\@<=${+ end=+}+ contained contains=@madExpression
 
-syntax region  madFenceBounded
-           \   start='#-' end='-#'
-highlight link madFenceBounded   Todo 
-syntax region  madFenceUnbounded
-           \   start='^#-' end='-#'
-highlight link madFenceUnbounded Error
- 
+syntax match   madNumber           "\v<\-?\d*\.?\d+>"
+highlight link madNumber           Number
+
+" Object
+syntax region  madObject
+           \   matchgroup=madObjectBraces
+           \   start=+{+
+           \   end=+}+
+           \   contained
+           \   contains=madComment,madIdentifier,madObjectKey,madObjectKeyString,madMethod,madComputed,madMethodType,madComma,madSpread,madExpression
+           \   skipwhite
+           \   skipempty
+syntax match   madObjectKey +\<\k\+\>\ze\s*:+ contained skipwhite skipempty nextgroup=madAssignmentColon
+syntax region  madObjectKeyString start=+\z(["']\)+ skip=+\\\\\|\\\z1\|\\\n+ end=+\z1+ contained contains=@Spell skipwhite skipempty nextgroup=madAssignmentColon
+
+syntax keyword madWhere            where
+           \   nextgroup=madWhereBlock
+highlight link madWhere            Label 
+
+" syntax region  madWhereBlock       
+"            \   start="{" end="}"
+"            \   matchgroup=madWhereBraces
+"            \   contains=TOP,@Spell,madConstructor,madFatArrow,@madExpression
+"            \   nextgroup=madParens,madComma
+
+
+syntax cluster   madTop
+             \   contains=madBlock,madParen,madImport,madExport,madComment,madIdentifier,madString,madTempalteString,madTemplateStringTag,madNumber,madArray,madReturn,madFunction,madFunctionCall,madWhere
+syntax cluster   madExpression
+             \   contains=madComment,madString,madTemplateString,madTemplateStringTag,madNumber,madArray,madObject,madIdentifier,madParens
