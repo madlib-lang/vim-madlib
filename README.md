@@ -2,6 +2,12 @@
 
 Work is largely paused on this effort; the future plan is to move this plugin into Lua and design for usage within NeoVim (this plugin works with NeoVim but if you have a mixed Lua / VimScript configuration it is slightly painful).
 
+## Usage with vim-plug
+
+```
+Plug 'madlib-lang/vim-madlib'
+```
+
 ## Auto-format on save
 
 This passes the current file to madlib format via `exec`:
