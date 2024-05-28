@@ -10,7 +10,6 @@ syntax case match
 setlocal foldmethod=indent
 setlocal foldignore=
 
-
 syntax keyword madImport           import
        \   skipwhite skipempty 
 highlight link madImport           Keyword
